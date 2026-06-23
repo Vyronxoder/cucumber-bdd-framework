@@ -20,12 +20,14 @@ public class InventoryPage extends BasePage {
     public boolean isDisplayed() { return isVisible(inventoryContainer); }
 
     public void addToCart(String productName) {
-        click(By.xpath("//div[text()='" + productName + "']/ancestor::div[@class='inventory_item']//button[contains(@id,'add-to-cart')]"));
-    }
+    String id = "add-to-cart-" + productName.toLowerCase().replace(" ", "-");
+    click(By.id(id));
+}
 
-    public void removeFromCart(String productName) {
-        click(By.xpath("//div[text()='" + productName + "']/ancestor::div[@class='inventory_item']//button[contains(@id,'remove')]"));
-    }
+public void removeFromCart(String productName) {
+    String id = "remove-" + productName.toLowerCase().replace(" ", "-");
+    click(By.id(id));
+}
 
     public int getCartCount() {
         return isVisible(cartBadge) ? Integer.parseInt(getText(cartBadge)) : 0;

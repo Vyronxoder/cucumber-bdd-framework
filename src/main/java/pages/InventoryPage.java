@@ -1,55 +1,61 @@
 package pages;
 
-import org.openqa.selenium.*;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.Select;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import java.time.Duration;
-import java.util.List;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
-public class InventoryPage extends BasePage {
-    private final By inventoryContainer = By.id("inventory_container");
-    private final By cartBadge          = By.className("shopping_cart_badge");
-    private final By cartIcon           = By.className("shopping_cart_link");
-    private final By sortDropdown       = By.className("product_sort_container");
-    private final By productNames       = By.className("inventory_item_name");
+public class InventoryPage {
 
-    public InventoryPage(WebDriver driver) { super(driver); }
+    private WebDriver driver;
 
-    public boolean isDisplayed() { return isVisible(inventoryContainer); }
+    // ==========================================
+    // 1. Constructor
+    // ==========================================
+    public InventoryPage(WebDriver driver) {
+        this.driver = driver;
+    }
 
-    public void addToCart(String productName) {
-        String formattedName = productName.toLowerCase().replace(" ", "-");
-        By addBtn = By.id("add-to-cart-" + formattedName);
-        By removeBtn = By.id("remove-" + formattedName);
+    // ==========================================
+    // 2. Locators (Update these to match your app)
+    // ==========================================
+    private By cartIconLocator = By.cssSelector(".shopping_cart_link"); // Example: standard cart icon class
+    private By cartBadgeLocator = By.cssSelector(".shopping_cart_badge"); // Example: the red number on the cart
 
-        // Wait until the button is present and clickable
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
-        WebElement button = wait.until(ExpectedConditions.elementToBeClickable(addBtn));
+    // ==========================================
+    // 3. The Methods Missing from your Build
+    // ==========================================
 
-        // Attempt JS Click
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", button);
+    /**
+     * Clicks the shopping cart icon to navigate to the cart page.
+     */
+    public void openCart() {
+        driver.findElement(cartIconLocator).click();
+    }
+
+    /**
+     * Removes an item from the cart dynamically based on the item's name.
+     * * @param itemName The string name of the product to remove.
+     */
+    public void removeFromCart(String itemName) {
+        // This is an example XPath that finds the "Remove" button associated with a specific item name.
+        // You MUST update this structure if your website's HTML is different.
+        String dynamicXPath = String.format("//div[text()='%s']/ancestor::div[@class='inventory_item']//button[contains(text(), 'Remove')]", itemName);
         
-        // Wait specifically for the 'remove' button to become visible
-        try {
-            wait.until(ExpectedConditions.visibilityOfElementLocated(removeBtn));
-        } catch (TimeoutException e) {
-            // Debugging: If it fails, check if the badge appeared instead
-            if (isDisplayed(cartBadge)) {
-                System.out.println("Add to cart successful (Badge updated), but button state didn't change.");
-            } else {
-                throw e; // Re-throw if even the badge didn't update
-            }
-        }
+        driver.findElement(By.xpath(dynamicXPath)).click();
     }
 
-    private boolean isDisplayed(By locator) {
+    /**
+     * Reads the number on the cart badge and returns it as an integer.
+     * * @return The number of items currently in the cart.
+     */
+    public int getCartCount() {
         try {
-            return driver.findElement(locator).isDisplayed();
-        } catch (Exception e) {
-            return false;
+            // Attempt to find the badge and parse the number
+            WebElement badge = driver.findElement(cartBadgeLocator);
+            return Integer.parseInt(badge.getText());
+        } catch (org.openqa.selenium.NoSuchElementException e) {
+            // If the badge is not present in the DOM, it usually means the cart is empty
+            return 0; 
         }
     }
-
-    // ... rest of your methods ...
 }

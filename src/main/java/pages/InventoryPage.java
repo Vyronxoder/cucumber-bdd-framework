@@ -1,9 +1,12 @@
 package pages;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
+
 import java.util.List;
 
 public class InventoryPage extends BasePage {
@@ -19,22 +22,30 @@ public class InventoryPage extends BasePage {
 
     public void addToCart(String productName) {
         String formattedName = productName.toLowerCase().replace(" ", "-");
-        String id = "add-to-cart-" + formattedName;
-        click(By.id(id));
+        By addBtn = By.id("add-to-cart-" + formattedName);
+        By removeBtn = By.id("remove-" + formattedName);
+
+        // Wait for the button to be clickable
+        wait.until(ExpectedConditions.elementToBeClickable(addBtn));
+
+        // Use JavascriptExecutor to ensure the click registers even if elements overlap
+        WebElement button = driver.findElement(addBtn);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", button);
         
-        // Wait for the button to change to "Remove" to confirm the action succeeded
-        String removeId = "remove-" + formattedName;
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(removeId)));
+        // Wait for the UI to update to "Remove" button
+        wait.until(ExpectedConditions.visibilityOfElementLocated(removeBtn));
     }
 
     public void removeFromCart(String productName) {
         String formattedName = productName.toLowerCase().replace(" ", "-");
-        String id = "remove-" + formattedName;
-        click(By.id(id));
+        By removeBtn = By.id("remove-" + formattedName);
+        By addBtn = By.id("add-to-cart-" + formattedName);
         
-        // Wait for the button to change back to "Add to cart"
-        String addId = "add-to-cart-" + formattedName;
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(addId)));
+        wait.until(ExpectedConditions.elementToBeClickable(removeBtn));
+        WebElement button = driver.findElement(removeBtn);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", button);
+        
+        wait.until(ExpectedConditions.visibilityOfElementLocated(addBtn));
     }
 
     public int getCartCount() {
@@ -43,7 +54,6 @@ public class InventoryPage extends BasePage {
 
     public void openCart() { 
         click(cartIcon); 
-        // Wait for the browser to navigate to the cart page
         wait.until(ExpectedConditions.urlContains("cart"));
     }
 

@@ -2,11 +2,10 @@ package pages;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class InventoryPage extends BasePage {
     private final By inventoryContainer = By.id("inventory_container");
@@ -20,23 +19,37 @@ public class InventoryPage extends BasePage {
     public boolean isDisplayed() { return isVisible(inventoryContainer); }
 
     public void addToCart(String productName) {
-    String id = "add-to-cart-" + productName.toLowerCase().replace(" ", "-");
-    click(By.id(id));
-}
+        String formattedName = productName.toLowerCase().replace(" ", "-");
+        String id = "add-to-cart-" + formattedName;
+        click(By.id(id));
+        
+        // Wait for the button to change to "Remove" to confirm the action succeeded
+        String removeId = "remove-" + formattedName;
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(removeId)));
+    }
 
-public void removeFromCart(String productName) {
-    String id = "remove-" + productName.toLowerCase().replace(" ", "-");
-    click(By.id(id));
-}
+    public void removeFromCart(String productName) {
+        String formattedName = productName.toLowerCase().replace(" ", "-");
+        String id = "remove-" + formattedName;
+        click(By.id(id));
+        
+        // Wait for the button to change back to "Add to cart"
+        String addId = "add-to-cart-" + formattedName;
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(addId)));
+    }
 
     public int getCartCount() {
         return isVisible(cartBadge) ? Integer.parseInt(getText(cartBadge)) : 0;
     }
 
-    public void openCart() { click(cartIcon); }
+    public void openCart() { 
+        click(cartIcon); 
+        // Wait for the browser to navigate to the cart page
+        wait.until(ExpectedConditions.urlContains("cart"));
+    }
 
     public void sortBy(String option) {
-        new Select(wait.until(org.openqa.selenium.support.ui.ExpectedConditions.visibilityOfElementLocated(sortDropdown))).selectByVisibleText(option);
+        new Select(wait.until(ExpectedConditions.visibilityOfElementLocated(sortDropdown))).selectByVisibleText(option);
     }
 
     public List<String> getProductNames() { return getAllTexts(productNames); }

@@ -62,7 +62,9 @@ public class InventoryPage {
      * Clicks the shopping cart icon to navigate to the cart page.
      */
     public void openCart() {
-        driver.findElement(cartIconLocator).click();
+        // Wait until it's actually clickable before clicking
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        wait.until(ExpectedConditions.elementToBeClickable(cartIconLocator)).click();
     }
 
     /**
@@ -71,10 +73,11 @@ public class InventoryPage {
      */
     public int getCartCount() {
         try {
-            WebElement badge = driver.findElement(cartBadgeLocator);
+            // Wait up to 5 seconds for the badge to show up
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+            WebElement badge = wait.until(ExpectedConditions.visibilityOfElementLocated(cartBadgeLocator));
             return Integer.parseInt(badge.getText());
-        } catch (org.openqa.selenium.NoSuchElementException e) {
+        } catch (Exception e) {
             return 0; 
         }
     }
-}
